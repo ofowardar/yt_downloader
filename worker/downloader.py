@@ -20,14 +20,13 @@ class DownloadWorker(QThread):
         """
         def progress_hook(d):
             if d['status'] == "downloading":
-                percent_str = d.get('_percent_str',"%0")
-                percent_str = percent_str.strip().replace('%','')
+                downloaded = d.get("downloaded_bytes", 0)
+                total = d.get("total_bytes") or d.get("total_bytes_estimate")
 
-                try:
-                    percent = int(float(percent_str))
+                if total:
+                    percent = int(downloaded * 100 / total)
                     self.progress.emit(percent)
-                except ValueError:
-                    pass
+
             elif d['status'] == "finished":
                 self.progress.emit(100)
                 self.status.emit("Download finished, processing file...")
@@ -46,4 +45,3 @@ class DownloadWorker(QThread):
 
         except Exception as e:
             self.status.emit(f"Error: {str(e)}")
-        
